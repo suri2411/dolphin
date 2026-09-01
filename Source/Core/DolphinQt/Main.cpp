@@ -27,6 +27,7 @@
 
 #include "Core/Boot/Boot.h"
 #include "Core/Config/MainSettings.h"
+#include "DolphinQt/NetPlay/NetPlayDialog.h"
 #include "Core/Core.h"
 #include "Core/DolphinAnalytics.h"
 #include "Core/System.h"
@@ -264,6 +265,15 @@ int main(int argc, char* argv[])
                    static_cast<const char*>(options.get("movie"))};
 
     // RomM Arcade: --netplay_host / --netplay_join
+    if (options.is_set("netplay_silent"))
+    {
+      RommArcade::SetSilent(true);
+      // Ohne eigenes Fenster gaebe es beim Spielstart nichts zu sehen: das
+      // Hauptfenster ist verborgen, und in es hinein wird gerendert, solange
+      // RenderToMain gilt.
+      Config::SetCurrent(Config::MAIN_RENDER_TO_MAIN, false);
+      win.hide();
+    }
     if (options.is_set("netplay_join") || options.is_set("netplay_host"))
     {
       const std::string netplay_game =

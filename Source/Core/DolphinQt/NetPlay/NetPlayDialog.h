@@ -32,9 +32,23 @@ class QSplitter;
 class QTableWidget;
 class QTextEdit;
 
+// RomM Arcade: im stillen Betrieb bleibt jedes Fenster verborgen. Der
+// Launcher zeigt die Runde selbst an und braucht dafuer nur zwei Dinge -
+// wer da ist, und einen Weg, das Spiel zu starten. Beides laeuft ueber die
+// Standardkanaele: Meldungen nach stdout, Befehle von stdin.
+namespace RommArcade
+{
+void SetSilent(bool silent);
+bool IsSilent();
+}  // namespace RommArcade
+
 class NetPlayDialog : public QDialog, public NetPlay::NetPlayUI
 {
   Q_OBJECT
+
+public:
+  // RomM Arcade: auf START von stdin hoeren, siehe RommArcade::IsSilent().
+  void RommArcadeListenForStart();
 public:
   using StartGameCallback = std::function<void(const std::string& path,
                                                std::unique_ptr<BootSessionData> boot_session_data)>;

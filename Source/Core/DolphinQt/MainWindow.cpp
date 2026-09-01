@@ -1724,6 +1724,15 @@ bool MainWindow::NetPlayJoin()
 
   m_netplay_setup_dialog->close();
   m_netplay_dialog->show(nickname, is_traversal);
+  if (RommArcade::IsSilent())
+  {
+    // Nichts von Dolphin zeigen, bis das Spiel laeuft - der Launcher fuehrt
+    // die Runde. show() muss trotzdem laufen: es baut den Dialog auf und
+    // haengt ihn an den Netplay-Client.
+    m_netplay_dialog->hide();
+    m_netplay_dialog->RommArcadeListenForStart();
+    hide();
+  }
 
   return true;
 }

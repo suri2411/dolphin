@@ -126,6 +126,10 @@ std::unique_ptr<optparse::OptionParser> CreateParser(ParserOptions options)
     parser->add_option("--netplay_join")
         .action("store_true")
         .help("Join the NetPlay session configured in [NetPlay]");
+    parser->add_option("--netplay_silent")
+        .action("store_true")
+        .help("Keep every window hidden until the game starts; report the "
+              "session on stdout and take START on stdin (RomM Arcade)");
   }
 
   parser->set_defaults("video_backend", "");

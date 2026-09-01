@@ -3,6 +3,11 @@
 
 #include "DolphinQt/NetPlay/NetPlayDialog.h"
 
+// RomM Arcade: Meldungen nach stdout, Befehle von stdin.
+#include <cstdio>
+#include <iostream>
+#include <thread>
+
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
@@ -719,8 +724,9 @@ void NetPlayDialog::UpdateGUI()
       {
         // Display Room ID.
         const auto host_id = Common::g_TraversalClient->GetHostID();
-        m_hostcode_label->setText(
-            QString::fromStdString(std::string(host_id.begin(), host_id.end())));
+        const std::string code(host_id.begin(), host_id.end());
+        RommArcade::Report("CODE " + code);
+        m_hostcode_label->setText(QString::fromStdString(code));
       }
       else
       {
@@ -870,6 +876,7 @@ void NetPlayDialog::SetOptionsEnabled(bool enabled)
 
 void NetPlayDialog::OnMsgStartGame()
 {
+  RommArcade::Report("STARTED");
   DisplayMessage(tr("Started game"), "green");
 
   g_netplay_chat_ui =
@@ -908,13 +915,62 @@ void NetPlayDialog::OnMsgPowerButton()
   QueueOnObject(this, [] { UICommon::TriggerSTMPowerEvent(); });
 }
 
+namespace RommArcade
+{
+static bool s_silent = false;
+static std::thread s_stdin_thread;
+void SetSilent(bool silent)
+{
+  s_silent = silent;
+}
+bool IsSilent()
+{
+  return s_silent;
+}
+
+// Eine Zeile nach stdout, sofort geschrieben. Der Launcher liest mit, und
+// eine gepufferte Zeile waere eine, die er erst nach dem Spiel saehe.
+static void Report(const std::string& line)
+{
+  if (!s_silent)
+    return;
+  std::printf("ROMM %s\n", line.c_str());
+  std::fflush(stdout);
+}
+}  // namespace RommArcade
+
+// Auf START von stdin warten und das Spiel starten. Ein eigener Faden, weil
+// std::getline blockiert; der Aufruf wandert ueber die Ereignisschleife
+// zurueck, denn OnStart() fasst Qt-Fenster an.
+void NetPlayDialog::RommArcadeListenForStart()
+{
+  if (!RommArcade::IsSilent() || RommArcade::s_stdin_thread.joinable())
+    return;
+  RommArcade::s_stdin_thread = std::thread([this]() {
+    std::string zeile;
+    while (std::getline(std::cin, zeile))
+    {
+      while (!zeile.empty() && (zeile.back() == '\r' || zeile.back() == '\n'))
+        zeile.pop_back();
+      if (zeile != "START")
+        continue;
+      QMetaObject::invokeMethod(this, [this]() { OnStart(); },
+                                Qt::QueuedConnection);
+      return;
+    }
+  });
+  RommArcade::s_stdin_thread.detach();
+}
+
 void NetPlayDialog::OnPlayerConnect(const std::string& player)
 {
+  RommArcade::Report("PLAYER + " + player);
   DisplayMessage(tr("%1 has joined").arg(QString::fromStdString(player)), "darkcyan");
 }
 
 void NetPlayDialog::OnPlayerDisconnect(const std::string& player)
 {
+  RommArcade::Report("PLAYER - " + player);
   DisplayMessage(tr("%1 has left").arg(QString::fromStdString(player)), "darkcyan");
 }
 
