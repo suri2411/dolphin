@@ -1,6 +1,12 @@
 # Windows-Bau fuer RomM Arcade. Dolphin bringt fuer Windows eine fertige
 # Visual-Studio-Loesung samt vorgebauter Externals mit - hier ist deshalb
 # nichts nachzuinstallieren ausser MSBuild.
+#
+# windows-2022, nicht windows-latest: auf dem neuen Abbild liegt Visual
+# Studio 18, dessen Standardbibliothek Aufrufe wie __std_min_element_4i
+# erzeugt. Die vorgebauten Externals von Dolphin 2606a kennen das Symbol
+# nicht, und der Linker bricht mit LNK2019 ab. Mit der Werkzeugkette, gegen
+# die Dolphin selbst baut, passt es zusammen.
 name: RomM Arcade – Windows
 
 on:
@@ -10,7 +16,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
         with:
