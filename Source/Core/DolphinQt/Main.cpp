@@ -256,6 +256,14 @@ int main(int argc, char* argv[])
   }
   else
   {
+    // RomM Arcade: keine Berichte an die Entwickler, und keine Nachfrage
+    // danach. Der Launcher startet Dolphin im Hintergrund; ein Fenster, das
+    // um Erlaubnis bittet, waere dort bestenfalls unsichtbar und
+    // schlimmstenfalls im Weg. Beides wird bei jedem Start gesetzt, damit es
+    // auch dann gilt, wenn jemand die Konfiguration von Hand geaendert hat.
+    Config::SetBase(Config::MAIN_ANALYTICS_ENABLED, false);
+    Config::SetBase(Config::MAIN_ANALYTICS_PERMISSION_ASKED, true);
+
     DolphinAnalytics::Instance().ReportDolphinStart("qt");
 
     Settings::Instance().InitDefaultPalette();
