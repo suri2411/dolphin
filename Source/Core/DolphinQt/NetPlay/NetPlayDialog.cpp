@@ -30,6 +30,31 @@
 #include <algorithm>
 #include <utility>
 
+
+namespace RommArcade
+{
+static bool s_silent = false;
+static std::thread s_stdin_thread;
+void SetSilent(bool silent)
+{
+  s_silent = silent;
+}
+bool IsSilent()
+{
+  return s_silent;
+}
+
+// Eine Zeile nach stdout, sofort geschrieben. Der Launcher liest mit, und
+// eine gepufferte Zeile waere eine, die er erst nach dem Spiel saehe.
+static void Report(const std::string& line)
+{
+  if (!s_silent)
+    return;
+  std::printf("ROMM %s\n", line.c_str());
+  std::fflush(stdout);
+}
+}  // namespace RommArcade
+
 #ifdef HAS_LIBMGBA
 #include <fmt/ranges.h>
 #endif
@@ -915,29 +940,6 @@ void NetPlayDialog::OnMsgPowerButton()
   QueueOnObject(this, [] { UICommon::TriggerSTMPowerEvent(); });
 }
 
-namespace RommArcade
-{
-static bool s_silent = false;
-static std::thread s_stdin_thread;
-void SetSilent(bool silent)
-{
-  s_silent = silent;
-}
-bool IsSilent()
-{
-  return s_silent;
-}
-
-// Eine Zeile nach stdout, sofort geschrieben. Der Launcher liest mit, und
-// eine gepufferte Zeile waere eine, die er erst nach dem Spiel saehe.
-static void Report(const std::string& line)
-{
-  if (!s_silent)
-    return;
-  std::printf("ROMM %s\n", line.c_str());
-  std::fflush(stdout);
-}
-}  // namespace RommArcade
 
 // Auf START von stdin warten und das Spiel starten. Ein eigener Faden, weil
 // std::getline blockiert; der Aufruf wandert ueber die Ereignisschleife
