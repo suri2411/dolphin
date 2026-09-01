@@ -1,0 +1,35 @@
+# Windows-Bau fuer RomM Arcade. Dolphin bringt fuer Windows eine fertige
+# Visual-Studio-Loesung samt vorgebauter Externals mit - hier ist deshalb
+# nichts nachzuinstallieren ausser MSBuild.
+name: RomM Arcade – Windows
+
+on:
+  push:
+    branches: [romm-arcade]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: Uebersetzen
+        run: msbuild Source/dolphin-emu.sln /p:Configuration=Release /p:Platform=x64 /m
+
+      - name: Einsammeln
+        shell: pwsh
+        run: |
+          $ziel = "Binary/x64"
+          if (-not (Test-Path $ziel)) { throw "Kein Ergebnis in $ziel" }
+          Compress-Archive -Path "$ziel/*" -DestinationPath dolphin-romm-x64.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dolphin-romm-windows
+          path: dolphin-romm-x64.zip
+          if-no-files-found: error

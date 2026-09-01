@@ -115,6 +115,17 @@ std::unique_ptr<optparse::OptionParser> CreateParser(ParserOptions options)
         .action("store_true")
         .help("Run Dolphin without the user interface (Requires --exec or --nand-title)");
     parser->add_option("-c", "--confirm").action("store_true").help("Set Confirm on Stop");
+    // RomM Arcade: start NetPlay without going through the dialog. Everything
+    // else - traversal choice, host code, nickname, port - is read from the
+    // configuration, exactly as MainWindow::NetPlayJoin() already does.
+    parser->add_option("--netplay_host")
+        .action("store")
+        .type("string")
+        .metavar("<file>")
+        .help("Host a NetPlay session for the given game and exit the dialog");
+    parser->add_option("--netplay_join")
+        .action("store_true")
+        .help("Join the NetPlay session configured in [NetPlay]");
   }
 
   parser->set_defaults("video_backend", "");

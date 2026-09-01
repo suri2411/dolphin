@@ -1,0 +1,63 @@
+# Linux-Bau fuer RomM Arcade.
+#
+# ubuntu-24.04, nicht 22.04: Dolphin verlangt C++23 (CMAKE_CXX_STANDARD 23),
+# und GCC 11 aus 22.04 kann das nicht. Das Ergebnis ist ein AppImage, weil ein
+# nackter CMake-Bau gegen die Qt- und glibc-Fassung des Bauwirts gebunden ist
+# und anderswo nicht startet.
+name: RomM Arcade – Linux
+
+on:
+  push:
+    branches: [romm-arcade]
+  workflow_dispatch:
+
+jobs:
+  appimage:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Abhaengigkeiten
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build pkg-config \
+            qt6-base-dev qt6-base-private-dev qt6-svg-dev libgl1-mesa-dev \
+            libasound2-dev libpulse-dev libudev-dev libevdev-dev \
+            libbluetooth-dev libxi-dev libxrandr-dev libusb-1.0-0-dev \
+            libcurl4-openssl-dev libsystemd-dev libfuse2t64 file
+
+      - name: Uebersetzen
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DLINUX_LOCAL_DEV=false \
+            -DENABLE_TESTS=OFF
+          cmake --build build --parallel
+
+      - name: Einsammeln
+        run: |
+          DESTDIR=$PWD/AppDir cmake --install build
+          ls -la AppDir/usr/bin
+
+      - name: AppImage schnueren
+        run: |
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy*.AppImage
+          export QMAKE=/usr/lib/qt6/bin/qmake6
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin qt \
+            --output appimage \
+            --desktop-file AppDir/usr/share/applications/dolphin-emu.desktop \
+            --icon-file AppDir/usr/share/icons/hicolor/256x256/apps/dolphin-emu.png
+          mv Dolphin*.AppImage dolphin-romm-x86_64.AppImage || true
+          ls -la *.AppImage
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dolphin-romm-linux
+          path: "*.AppImage"
+          if-no-files-found: error

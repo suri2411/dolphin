@@ -88,6 +88,11 @@ public:
                       const std::string& movie_path);
   ~MainWindow() override;
 
+  // RomM Arcade: entry point for --netplay-host / --netplay-join. Deferred to
+  // the event loop because NetPlayJoin() and NetPlayHost() expect a fully
+  // constructed window; calling them from the constructor path crashes.
+  void StartNetPlayFromCommandLine(const QString& host_game_path, bool join);
+
   WindowSystemInfo GetWindowSystemInfo() const;
 
   bool eventFilter(QObject* object, QEvent* event) override;

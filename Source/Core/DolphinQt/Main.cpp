@@ -263,6 +263,16 @@ int main(int argc, char* argv[])
     MainWindow win{Core::System::GetInstance(), std::move(boot),
                    static_cast<const char*>(options.get("movie"))};
 
+    // RomM Arcade: --netplay_host / --netplay_join
+    if (options.is_set("netplay_join") || options.is_set("netplay_host"))
+    {
+      const std::string netplay_game =
+          options.is_set("netplay_host") ? static_cast<const char*>(options.get("netplay_host")) :
+                                           std::string{};
+      win.StartNetPlayFromCommandLine(QString::fromStdString(netplay_game),
+                                      options.is_set("netplay_join"));
+    }
+
 #if defined(USE_ANALYTICS) && USE_ANALYTICS
     if (!Config::Get(Config::MAIN_ANALYTICS_PERMISSION_ASKED))
     {

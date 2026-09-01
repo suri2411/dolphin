@@ -4,6 +4,7 @@
 #include "DolphinQt/MainWindow.h"
 
 #include <QApplication>
+#include <QTimer>
 #include <QCloseEvent>
 #include <QDateTime>
 #include <QDesktopServices>
@@ -1426,6 +1427,30 @@ void MainWindow::ShowGraphicsWindow()
 {
   ShowSettingsWindow();
   m_settings_window->SelectPane(SettingsWindowPaneIndex::Graphics);
+}
+
+void MainWindow::StartNetPlayFromCommandLine(const QString& host_game_path, bool join)
+{
+  // Deferred with a zero timer: at construction time the event loop has not
+  // started yet, and both paths below open dialogs and sockets.
+  QTimer::singleShot(0, this, [this, host_game_path, join]() {
+    if (join)
+    {
+      NetPlayJoin();
+      return;
+    }
+    if (host_game_path.isEmpty())
+      return;
+    const UICommon::GameFile game{host_game_path.toStdString()};
+    if (!game.IsValid())
+    {
+      ModalMessageBox::critical(this, tr("Error"),
+                                tr("Cannot host NetPlay: %1 is not a game Dolphin can read.")
+                                    .arg(host_game_path));
+      return;
+    }
+    NetPlayHost(game);
+  });
 }
 
 void MainWindow::ShowNetPlaySetupDialog()
