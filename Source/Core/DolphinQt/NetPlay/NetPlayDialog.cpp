@@ -6,6 +6,7 @@
 // RomM Arcade: Meldungen nach stdout, Befehle von stdin.
 #include <cstdio>
 #include <iostream>
+#include <map>
 #include <thread>
 
 #include <QAction>
@@ -46,11 +47,28 @@ bool IsSilent()
 
 // Eine Zeile nach stdout, sofort geschrieben. Der Launcher liest mit, und
 // eine gepufferte Zeile waere eine, die er erst nach dem Spiel saehe.
-static void Report(const std::string& line)
+//
+// Nur bei Aenderung: die Rueckmeldung des Traversal-Servers laeuft in einer
+// Schleife, und der Code stand nachgemessen 68 mal in der Ausgabe eines
+// einzigen Laufs. Zustandsmeldungen wiederholen sich, Ereignisse nicht -
+// deshalb wird nur der letzte Zustand je Art verglichen.
+static std::map<std::string, std::string> s_last;
+static void Report(const std::string& art, const std::string& wert,
+                   bool nur_bei_aenderung = false)
 {
   if (!s_silent)
     return;
-  std::printf("ROMM %s\n", line.c_str());
+  if (nur_bei_aenderung)
+  {
+    auto& vorher = s_last[art];
+    if (vorher == wert)
+      return;
+    vorher = wert;
+  }
+  if (wert.empty())
+    std::printf("ROMM %s\n", art.c_str());
+  else
+    std::printf("ROMM %s %s\n", art.c_str(), wert.c_str());
   std::fflush(stdout);
 }
 }  // namespace RommArcade
@@ -750,7 +768,7 @@ void NetPlayDialog::UpdateGUI()
         // Display Room ID.
         const auto host_id = Common::g_TraversalClient->GetHostID();
         const std::string code(host_id.begin(), host_id.end());
-        RommArcade::Report("CODE " + code);
+        RommArcade::Report("CODE", code, true);
         m_hostcode_label->setText(QString::fromStdString(code));
       }
       else
@@ -901,7 +919,7 @@ void NetPlayDialog::SetOptionsEnabled(bool enabled)
 
 void NetPlayDialog::OnMsgStartGame()
 {
-  RommArcade::Report("STARTED");
+  RommArcade::Report("STARTED", "");
   DisplayMessage(tr("Started game"), "green");
 
   g_netplay_chat_ui =
@@ -966,13 +984,13 @@ void NetPlayDialog::RommArcadeListenForStart()
 
 void NetPlayDialog::OnPlayerConnect(const std::string& player)
 {
-  RommArcade::Report("PLAYER + " + player);
+  RommArcade::Report("PLAYER +", player);
   DisplayMessage(tr("%1 has joined").arg(QString::fromStdString(player)), "darkcyan");
 }
 
 void NetPlayDialog::OnPlayerDisconnect(const std::string& player)
 {
-  RommArcade::Report("PLAYER - " + player);
+  RommArcade::Report("PLAYER -", player);
   DisplayMessage(tr("%1 has left").arg(QString::fromStdString(player)), "darkcyan");
 }
 
