@@ -121,9 +121,17 @@ static bool QtMsgAlertHandler(const char* caption, const char* text, bool yes_no
 int main(int argc, char* argv[])
 {
 #ifdef _WIN32
-  const bool console_attached = AttachConsole(ATTACH_PARENT_PROCESS) != FALSE;
-  HANDLE stdout_handle = ::GetStdHandle(STD_OUTPUT_HANDLE);
-  if (console_attached && stdout_handle)
+  // RomM Arcade: nur an eine Konsole anhaengen, wenn die Ausgabe nicht
+  // ohnehin schon woanders hinzeigt. Wer uns ueber eine Roehre startet -
+  // der Launcher tut das, um den Gastgeber-Raum zu fuehren - bekam sonst
+  // nichts zu lesen: freopen("CONOUT$") biegt stdout auf die Konsole um
+  // und damit an der Roehre vorbei. Fuer ein Fensterprogramm (WIN32) haengt
+  // die C-Laufzeit stdout an das geerbte Handle, solange wir es in Ruhe
+  // lassen.
+  const HANDLE stdout_handle = ::GetStdHandle(STD_OUTPUT_HANDLE);
+  const DWORD stdout_art = stdout_handle ? ::GetFileType(stdout_handle) : FILE_TYPE_UNKNOWN;
+  const bool schon_umgeleitet = stdout_art == FILE_TYPE_PIPE || stdout_art == FILE_TYPE_DISK;
+  if (!schon_umgeleitet && AttachConsole(ATTACH_PARENT_PROCESS) != FALSE)
   {
     freopen("CONOUT$", "w", stdout);
     freopen("CONOUT$", "w", stderr);
