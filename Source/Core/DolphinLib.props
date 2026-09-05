@@ -778,6 +778,7 @@
     <ClInclude Include="VideoCommon\Resources\TextureAndSampler.h" />
     <ClInclude Include="VideoCommon\Resources\TextureDataResource.h" />
     <ClInclude Include="VideoCommon\Resources\TexturePool.h" />
+    <ClInclude Include="VideoCommon\RommMenuUI.h" />
     <ClInclude Include="VideoCommon\ShaderCache.h" />
     <ClInclude Include="VideoCommon\ShaderCompileUtils.h" />
     <ClInclude Include="VideoCommon\ShaderGenCommon.h" />
@@ -1444,6 +1445,7 @@
     <ClCompile Include="VideoCommon\PostProcessing.cpp" />
     <ClCompile Include="VideoCommon\Present.cpp" />
     <ClCompile Include="VideoCommon\RenderState.cpp" />
+    <ClCompile Include="VideoCommon\RommMenuUI.cpp" />
     <ClCompile Include="VideoCommon\Resources\CustomResourceManager.cpp" />
     <ClCompile Include="VideoCommon\Resources\InvalidTextures.cpp" />
     <ClCompile Include="VideoCommon\Resources\MaterialResource.cpp" />
