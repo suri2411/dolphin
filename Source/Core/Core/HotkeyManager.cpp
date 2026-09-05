@@ -415,6 +415,38 @@ void HotkeyManager::LoadDefaults(const ControllerInterface& ciface)
     return fmt::format("@({})", fmt::join(inputs, "+"));
   };
 
+  // RomM Arcade: das Pad-Menue auf die Guide-Taste legen.
+  //
+  // Hier und nicht in einer Hotkeys.ini des Launchers: sobald die Datei
+  // einen [Hotkeys]-Abschnitt hat, laedt Dolphin diese Vorgaben nicht mehr.
+  // Eine Datei mit nur fuenf Zeilen nahm darum jedem anderen Kuerzel seine
+  // Belegung - auch Escape, mit dem man das Spiel beendet.
+  //
+  // Das Geraet wird gesucht, nicht geraten: welcher Bezeichner ein Pad
+  // traegt, haengt am Modell und an der Reihenfolge des Einsteckens.
+  // Genommen wird das erste, das eine Guide-Taste hat.
+  const auto pad_ausdruck = [&ciface](const char* taste) -> std::string {
+    for (const std::string& geraet : ciface.GetAllDeviceStrings())
+    {
+      ciface::Core::DeviceQualifier qualifizierer;
+      qualifizierer.FromString(geraet);
+      const auto device = ciface.FindDevice(qualifizierer);
+      if (device && device->FindInput("Guide"))
+        return fmt::format("`{}:{}`", geraet, taste);
+    }
+    return {};
+  };
+  for (const auto& [id, taste] : {std::pair{HK_ROMM_MENU, "Guide"},
+                                  {HK_ROMM_UP, "Pad N"},
+                                  {HK_ROMM_DOWN, "Pad S"},
+                                  {HK_ROMM_OK, "Button S"},
+                                  {HK_ROMM_BACK, "Button E"}})
+  {
+    const std::string ausdruck = pad_ausdruck(taste);
+    if (!ausdruck.empty())
+      set_key_expression(id, ausdruck);
+  }
+
   // General hotkeys
   set_key_expression(HK_OPEN, hotkey_string({"Ctrl", "O"}));
   set_key_expression(HK_PLAY_PAUSE, "F10");
