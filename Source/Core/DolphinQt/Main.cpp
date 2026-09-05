@@ -48,6 +48,8 @@
 #include "UICommon/CommandLineParse.h"
 #include "UICommon/UICommon.h"
 
+#include "VideoCommon/RommMenuUI.h"
+
 static bool QtMsgAlertHandler(const char* caption, const char* text, bool yes_no,
                               Common::MsgType style)
 {
@@ -279,6 +281,11 @@ int main(int argc, char* argv[])
 
     MainWindow win{Core::System::GetInstance(), std::move(boot),
                    static_cast<const char*>(options.get("movie"))};
+
+    // RomM Arcade: das Pad-Menue anlegen, bevor gerendert wird. Der
+    // Videofaden liest den Zeiger je Bild; er darf nicht erst entstehen,
+    // waehrend schon gezeichnet wird.
+    g_romm_menu_ui = std::make_unique<RommMenuUI>();
 
     // RomM Arcade: --netplay_host / --netplay_join
     if (options.is_set("netplay_silent"))

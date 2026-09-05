@@ -23,6 +23,7 @@
 #include "VideoCommon/AbstractStagingTexture.h"
 #include "VideoCommon/FramebufferShaderGen.h"
 #include "VideoCommon/NetPlayChatUI.h"
+#include "VideoCommon/RommMenuUI.h"
 #include "VideoCommon/NetPlayGolfUI.h"
 #include "VideoCommon/OnScreenDisplay.h"
 #include "VideoCommon/PerformanceMetrics.h"
@@ -318,6 +319,11 @@ void OnScreenUI::DrawDebugText()
 
   if (Config::Get(Config::GFX_SHOW_NETPLAY_MESSAGES) && g_netplay_chat_ui)
     g_netplay_chat_ui->Display();
+
+  // RomM Arcade: das Pad-Menue. Ohne Bedingung - es zeigt sich nur, wenn es
+  // geoeffnet wurde, und das entscheidet es selbst.
+  if (g_romm_menu_ui)
+    g_romm_menu_ui->Display();
 
   if (Config::Get(Config::NETPLAY_GOLF_MODE_OVERLAY) && g_netplay_golf_ui)
     g_netplay_golf_ui->Display();

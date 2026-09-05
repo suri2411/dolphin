@@ -25,6 +25,7 @@
 #include "Core/Core.h"
 #include "Core/FreeLookManager.h"
 #include "Core/HotkeyManager.h"
+#include "VideoCommon/RommMenuUI.h"
 #include "Core/IOS/IOS.h"
 #include "Core/State.h"
 #include "Core/System.h"
@@ -346,6 +347,65 @@ void HotkeyScheduler::Run()
                              "Muted" :
                              std::to_string(Config::Get(Config::MAIN_AUDIO_VOLUME)) + "%"));
       };
+
+      // RomM Arcade: das Pad-Menue auf der Guide-Taste.
+      //
+      // Solange es offen ist, wird die Emulation angehalten. Sonst reagiert
+      // das Spiel auf dieselben Tastendruecke, mit denen man im Menue
+      // blaettert - man stellt die Lautstaerke ein und wirft dabei im Spiel
+      // einen Gegenstand weg.
+      if (g_romm_menu_ui)
+      {
+        const bool war_offen = g_romm_menu_ui->IstOffen();
+        if (IsHotkey(HK_ROMM_MENU))
+        {
+          g_romm_menu_ui->Umschalten();
+          const bool jetzt_offen = g_romm_menu_ui->IstOffen();
+          if (Core::IsRunning(system))
+            Core::SetState(system, jetzt_offen ? Core::State::Paused :
+                                                 Core::State::Running);
+        }
+        else if (war_offen)
+        {
+          if (IsHotkey(HK_ROMM_UP))
+            g_romm_menu_ui->Hoch();
+          if (IsHotkey(HK_ROMM_DOWN))
+            g_romm_menu_ui->Runter();
+          if (IsHotkey(HK_ROMM_BACK))
+          {
+            g_romm_menu_ui->Schliessen();
+            if (Core::IsRunning(system))
+              Core::SetState(system, Core::State::Running);
+          }
+          else if (IsHotkey(HK_ROMM_OK))
+          {
+            switch (g_romm_menu_ui->Gewaehlt())
+            {
+            case RommMenuUI::Eintrag::Leiser:
+              settings.DecreaseVolume(10);
+              break;
+            case RommMenuUI::Eintrag::Lauter:
+              settings.IncreaseVolume(10);
+              break;
+            case RommMenuUI::Eintrag::Stumm:
+              AudioCommon::ToggleMuteVolume(system);
+              break;
+            case RommMenuUI::Eintrag::Beenden:
+              // Erst schliessen, dann beenden: das Menue ueberlebt den
+              // Fensterwechsel sonst und stuende beim naechsten Spiel offen.
+              g_romm_menu_ui->Schliessen();
+              emit ExitHotkey();
+              break;
+            default:
+              break;
+            }
+          }
+        }
+        // Waehrend das Menue offen ist, gelten die uebrigen Hotkeys nicht -
+        // sonst loest dieselbe Taste zweierlei aus.
+        if (g_romm_menu_ui->IstOffen())
+          continue;
+      }
 
       // Volume
       if (IsHotkey(HK_VOLUME_DOWN))

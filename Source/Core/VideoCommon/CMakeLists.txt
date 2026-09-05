@@ -119,6 +119,8 @@ add_library(videocommon
   NativeVertexFormat.h
   NetPlayChatUI.cpp
   NetPlayChatUI.h
+  RommMenuUI.cpp
+  RommMenuUI.h
   NetPlayGolfUI.cpp
   NetPlayGolfUI.h
   OnScreenDisplay.cpp

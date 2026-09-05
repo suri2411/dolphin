@@ -187,6 +187,16 @@ enum Hotkey
   HK_SKYLANDERS_PORTAL,
   HK_INFINITY_BASE,
 
+  // RomM Arcade: das Menue auf der Guide-Taste. Am Fernseher gibt es keine
+  // Tastatur - Lautstaerke und Beenden muessen mit dem Pad erreichbar sein.
+  // Ans Ende gehaengt, weil die Gruppen ueber Bereiche der Aufzaehlung
+  // definiert sind: dazwischen einzufuegen verschoebe fremde Gruppen.
+  HK_ROMM_MENU,
+  HK_ROMM_UP,
+  HK_ROMM_DOWN,
+  HK_ROMM_OK,
+  HK_ROMM_BACK,
+
   NUM_HOTKEYS,
 };
 
@@ -219,6 +229,7 @@ enum HotkeyGroup : int
   HKGP_GBA_VOLUME,
   HKGP_GBA_SIZE,
   HKGP_USB_EMU,
+  HKGP_ROMM,
 
   NUM_HOTKEY_GROUPS,
 };

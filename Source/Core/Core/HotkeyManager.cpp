@@ -197,7 +197,13 @@ constexpr std::array<const char*, NUM_HOTKEYS> s_hotkey_labels{{
     _trans("4x"),
 
     _trans("Show Skylanders Portal"),
-    _trans("Show Infinity Base")
+    _trans("Show Infinity Base"),
+
+    _trans("Open RomM Menu"),
+    _trans("RomM Menu Up"),
+    _trans("RomM Menu Down"),
+    _trans("RomM Menu Select"),
+    _trans("RomM Menu Back")
 }};
 // clang-format on
 static_assert(NUM_HOTKEYS == s_hotkey_labels.size(), "Wrong count of hotkey_labels");
@@ -325,7 +331,10 @@ constexpr std::array<HotkeyGroupInfo, NUM_HOTKEY_GROUPS> s_groups_info = {
      {_trans("GBA Core"), HK_GBA_LOAD, HK_GBA_RESET, true},
      {_trans("GBA Volume"), HK_GBA_VOLUME_DOWN, HK_GBA_TOGGLE_MUTE, true},
      {_trans("GBA Window Size"), HK_GBA_1X, HK_GBA_4X, true},
-     {_trans("USB Emulation Devices"), HK_SKYLANDERS_PORTAL, HK_INFINITY_BASE}}};
+     {_trans("USB Emulation Devices"), HK_SKYLANDERS_PORTAL, HK_INFINITY_BASE},
+     // RomM Arcade: eigene Gruppe, damit der Launcher sie in der Hotkeys.ini
+     // ansprechen kann, ohne fremde Belegungen anzufassen.
+     {_trans("RomM Arcade"), HK_ROMM_MENU, HK_ROMM_BACK}}};
 
 HotkeyManager::HotkeyManager()
 {
